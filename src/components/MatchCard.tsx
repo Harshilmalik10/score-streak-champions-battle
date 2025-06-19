@@ -1,7 +1,8 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trophy, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, Users, Crown, Star } from 'lucide-react';
 
 interface Match {
   id: number;
@@ -16,9 +17,24 @@ interface MatchCardProps {
   prediction: 'team1' | 'draw' | 'team2' | null;
   onPredict: (matchId: number, prediction: 'team1' | 'draw' | 'team2') => void;
   showResults?: boolean;
+  captain?: number | null;
+  viceCaptain?: number | null;
+  onCaptainSelect?: (matchId: number) => void;
+  onViceCaptainSelect?: (matchId: number) => void;
+  canSelectCaptain?: boolean;
 }
 
-const MatchCard = ({ match, prediction, onPredict, showResults = false }: MatchCardProps) => {
+const MatchCard = ({ 
+  match, 
+  prediction, 
+  onPredict, 
+  showResults = false,
+  captain,
+  viceCaptain,
+  onCaptainSelect,
+  onViceCaptainSelect,
+  canSelectCaptain = false
+}: MatchCardProps) => {
   const getResultIcon = (result: string) => {
     if (showResults && match.actualResult) {
       if (prediction === match.actualResult) {
@@ -41,11 +57,31 @@ const MatchCard = ({ match, prediction, onPredict, showResults = false }: MatchC
     return 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
   };
 
+  const isCaptain = captain === match.id;
+  const isViceCaptain = viceCaptain === match.id;
+
   return (
-    <Card className="p-6 transition-all duration-300 hover:shadow-lg">
+    <Card className={`p-6 transition-all duration-300 hover:shadow-lg ${
+      isCaptain ? 'ring-2 ring-yellow-400 bg-yellow-50' : 
+      isViceCaptain ? 'ring-2 ring-blue-400 bg-blue-50' : ''
+    }`}>
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-800">Match {match.id}</h3>
+          <div className="flex items-center space-x-2">
+            <h3 className="text-lg font-semibold text-gray-800">Match {match.id}</h3>
+            {isCaptain && (
+              <Badge className="bg-yellow-500 text-white flex items-center space-x-1">
+                <Crown className="h-3 w-3" />
+                <span>Captain</span>
+              </Badge>
+            )}
+            {isViceCaptain && (
+              <Badge className="bg-blue-500 text-white flex items-center space-x-1">
+                <Star className="h-3 w-3" />
+                <span>V.Captain</span>
+              </Badge>
+            )}
+          </div>
           {getResultIcon(prediction || '')}
         </div>
         
@@ -98,6 +134,34 @@ const MatchCard = ({ match, prediction, onPredict, showResults = false }: MatchC
             {match.team2} Win
           </Button>
         </div>
+
+        {canSelectCaptain && onCaptainSelect && onViceCaptainSelect && (
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onCaptainSelect(match.id)}
+              className={`flex items-center space-x-1 ${
+                isCaptain ? 'bg-yellow-500 text-white' : ''
+              }`}
+            >
+              <Crown className="h-3 w-3" />
+              <span>Captain (9pts)</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onViceCaptainSelect(match.id)}
+              className={`flex items-center space-x-1 ${
+                isViceCaptain ? 'bg-blue-500 text-white' : ''
+              }`}
+            >
+              <Star className="h-3 w-3" />
+              <span>V.Captain (6pts)</span>
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );

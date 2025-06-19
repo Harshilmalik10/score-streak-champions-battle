@@ -7,9 +7,10 @@ import TournamentSelector from '@/components/TournamentSelector';
 import GameModeSelector from '@/components/GameModeSelector';
 import MatchCard from '@/components/MatchCard';
 import ScoreBoard from '@/components/ScoreBoard';
+import WalletManager from '@/components/WalletManager';
 import { Button } from '@/components/ui/button';
 import { basketballMatches, footballMatches } from '@/data/mockMatches';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, LogIn, UserPlus } from 'lucide-react';
 
 interface User {
   id: string;
@@ -28,15 +29,21 @@ interface Tournament {
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [showWallet, setShowWallet] = useState(false);
   const [selectedSport, setSelectedSport] = useState<'basketball' | 'football' | null>(null);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [gameMode, setGameMode] = useState<'select' | 'tournament' | 'predict' | 'results'>('select');
   const [predictions, setPredictions] = useState<Record<number, 'team1' | 'draw' | 'team2'>>({});
+  const [captain, setCaptain] = useState<number | null>(null);
+  const [viceCaptain, setViceCaptain] = useState<number | null>(null);
 
   const currentMatches = selectedSport === 'basketball' ? basketballMatches : footballMatches;
 
   const handleAuth = (userData: User) => {
     setUser(userData);
+    setShowAuth(false);
   };
 
   const handleLogout = () => {
@@ -45,19 +52,27 @@ const Index = () => {
     setSelectedTournament(null);
     setGameMode('select');
     setPredictions({});
+    setCaptain(null);
+    setViceCaptain(null);
+    setShowWallet(false);
   };
 
   const handleSportSelect = (sport: 'basketball' | 'football') => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
     setSelectedSport(sport);
     setGameMode('tournament');
     setSelectedTournament(null);
     setPredictions({});
+    setCaptain(null);
+    setViceCaptain(null);
   };
 
   const handleTournamentSelect = (tournament: Tournament) => {
     setSelectedTournament(tournament);
     setGameMode('select');
-    // Deduct entry fee from user balance
     if (user) {
       setUser({
         ...user,
@@ -77,20 +92,50 @@ const Index = () => {
     }));
   };
 
+  const handleCaptainSelect = (matchId: number) => {
+    if (captain === matchId) {
+      setCaptain(null);
+    } else {
+      setCaptain(matchId);
+      if (viceCaptain === matchId) {
+        setViceCaptain(null);
+      }
+    }
+  };
+
+  const handleViceCaptainSelect = (matchId: number) => {
+    if (viceCaptain === matchId) {
+      setViceCaptain(null);
+    } else {
+      setViceCaptain(matchId);
+      if (captain === matchId) {
+        setCaptain(null);
+      }
+    }
+  };
+
   const calculateScore = () => {
     let correct = 0;
     let total = 0;
+    let score = 0;
     
     currentMatches.forEach(match => {
       if (predictions[match.id]) {
         total++;
         if (predictions[match.id] === match.actualResult) {
           correct++;
+          let points = 3;
+          if (captain === match.id) {
+            points = 9; // Captain gets 3x points
+          } else if (viceCaptain === match.id) {
+            points = 6; // Vice-captain gets 2x points
+          }
+          score += points;
         }
       }
     });
     
-    return { correct, total, score: correct * 3 };
+    return { correct, total, score };
   };
 
   const { correct, total, score } = calculateScore();
@@ -100,16 +145,47 @@ const Index = () => {
     setSelectedTournament(null);
     setGameMode('select');
     setPredictions({});
+    setCaptain(null);
+    setViceCaptain(null);
   };
 
-  // Show auth form if user is not logged in
-  if (!user) {
-    return <AuthForm onAuth={handleAuth} />;
+  const handleWalletUpdate = (newBalance: number) => {
+    if (user) {
+      setUser({ ...user, balance: newBalance });
+    }
+  };
+
+  // Show auth form if requested
+  if (showAuth) {
+    return (
+      <AuthForm 
+        onAuth={handleAuth} 
+        initialMode={authMode}
+        onBack={() => setShowAuth(false)}
+      />
+    );
+  }
+
+  // Show wallet manager if requested
+  if (showWallet && user) {
+    return (
+      <WalletManager 
+        user={user}
+        onWalletUpdate={handleWalletUpdate}
+        onBack={() => setShowWallet(false)}
+      />
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <UserHeader user={user} onLogout={handleLogout} />
+      {user && (
+        <UserHeader 
+          user={user} 
+          onLogout={handleLogout}
+          onWalletClick={() => setShowWallet(true)}
+        />
+      )}
       
       <div className="p-4">
         {!selectedSport && (
@@ -118,9 +194,29 @@ const Index = () => {
               <h1 className="text-5xl font-bold text-gray-900 mb-4">
                 Fantasy Sports Predictor
               </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
                 Join tournaments, predict match outcomes, and win exciting prizes!
               </p>
+              
+              {!user && (
+                <div className="flex justify-center space-x-4 mb-8">
+                  <Button 
+                    onClick={() => { setAuthMode('login'); setShowAuth(true); }}
+                    className="flex items-center space-x-2"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Login</span>
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => { setAuthMode('signup'); setShowAuth(true); }}
+                    className="flex items-center space-x-2"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Sign Up</span>
+                  </Button>
+                </div>
+              )}
             </div>
             
             <SportSelector 
@@ -147,7 +243,7 @@ const Index = () => {
             
             <TournamentSelector 
               sport={selectedSport}
-              userBalance={user.balance}
+              userBalance={user?.balance || 0}
               onTournamentSelect={handleTournamentSelect}
             />
           </div>
@@ -214,6 +310,17 @@ const Index = () => {
               />
             </div>
 
+            {gameMode === 'predict' && (
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h3 className="font-semibold text-yellow-800 mb-2">Captain & Vice-Captain Selection</h3>
+                <p className="text-sm text-yellow-700">
+                  Select one Captain (9 points if correct) and one Vice-Captain (6 points if correct) from your predictions.
+                  {captain && ` Captain: Match ${captain}`}
+                  {viceCaptain && ` | Vice-Captain: Match ${viceCaptain}`}
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentMatches.map(match => (
                 <MatchCard
@@ -222,6 +329,11 @@ const Index = () => {
                   prediction={predictions[match.id] || null}
                   onPredict={handlePredict}
                   showResults={gameMode === 'results'}
+                  captain={captain}
+                  viceCaptain={viceCaptain}
+                  onCaptainSelect={handleCaptainSelect}
+                  onViceCaptainSelect={handleViceCaptainSelect}
+                  canSelectCaptain={gameMode === 'predict' && predictions[match.id] !== undefined}
                 />
               ))}
             </div>

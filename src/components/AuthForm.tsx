@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
 
 interface AuthFormProps {
   onAuth: (user: { id: string; email: string; balance: number }) => void;
+  initialMode?: 'login' | 'signup';
+  onBack?: () => void;
 }
 
-const AuthForm = ({ onAuth }: AuthFormProps) => {
-  const [isLogin, setIsLogin] = useState(true);
+const AuthForm = ({ onAuth, initialMode = 'login', onBack }: AuthFormProps) => {
+  const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,13 +25,11 @@ const AuthForm = ({ onAuth }: AuthFormProps) => {
     setLoading(true);
 
     try {
-      // Simulate authentication - in real app this would be Supabase auth
       if (isLogin) {
-        // Login simulation
         const mockUser = {
           id: '1',
           email: email,
-          balance: 5000 // Starting balance of ₹5000
+          balance: 5000
         };
         onAuth(mockUser);
         toast({
@@ -36,11 +37,10 @@ const AuthForm = ({ onAuth }: AuthFormProps) => {
           description: "Welcome back!",
         });
       } else {
-        // Signup simulation
         const mockUser = {
           id: '1',
           email: email,
-          balance: 10000 // New users get ₹10000
+          balance: 10000
         };
         onAuth(mockUser);
         toast({
@@ -63,9 +63,17 @@ const AuthForm = ({ onAuth }: AuthFormProps) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">
-            {isLogin ? 'Login' : 'Sign Up'}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            {onBack && (
+              <Button variant="ghost" size="sm" onClick={onBack}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <CardTitle className="text-2xl text-center flex-1">
+              {isLogin ? 'Login' : 'Sign Up'}
+            </CardTitle>
+            <div className="w-10"></div>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
