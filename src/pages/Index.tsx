@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import AuthForm from '@/components/AuthForm';
 import UserHeader from '@/components/UserHeader';
@@ -9,8 +8,8 @@ import MatchCard from '@/components/MatchCard';
 import ScoreBoard from '@/components/ScoreBoard';
 import WalletManager from '@/components/WalletManager';
 import { Button } from '@/components/ui/button';
-import { basketballMatches, footballMatches } from '@/data/mockMatches';
-import { ArrowLeft, RefreshCw, LogIn, UserPlus } from 'lucide-react';
+import { basketballMatches, footballMatches, tennisMatches } from '@/data/mockMatches';
+import { ArrowLeft, RefreshCw, LogIn, UserPlus, Sparkles } from 'lucide-react';
 
 interface User {
   id: string;
@@ -32,14 +31,21 @@ const Index = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [showWallet, setShowWallet] = useState(false);
-  const [selectedSport, setSelectedSport] = useState<'basketball' | 'football' | null>(null);
+  const [selectedSport, setSelectedSport] = useState<'basketball' | 'football' | 'tennis' | null>(null);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [gameMode, setGameMode] = useState<'select' | 'tournament' | 'predict' | 'results'>('select');
   const [predictions, setPredictions] = useState<Record<number, 'team1' | 'draw' | 'team2'>>({});
   const [captain, setCaptain] = useState<number | null>(null);
   const [viceCaptain, setViceCaptain] = useState<number | null>(null);
 
-  const currentMatches = selectedSport === 'basketball' ? basketballMatches : footballMatches;
+  const getCurrentMatches = () => {
+    if (selectedSport === 'basketball') return basketballMatches;
+    if (selectedSport === 'football') return footballMatches;
+    if (selectedSport === 'tennis') return tennisMatches;
+    return [];
+  };
+
+  const currentMatches = getCurrentMatches();
 
   const handleAuth = (userData: User) => {
     setUser(userData);
@@ -57,7 +63,7 @@ const Index = () => {
     setShowWallet(false);
   };
 
-  const handleSportSelect = (sport: 'basketball' | 'football') => {
+  const handleSportSelect = (sport: 'basketball' | 'football' | 'tennis') => {
     if (!user) {
       setShowAuth(true);
       return;
@@ -178,7 +184,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100">
       {user && (
         <UserHeader 
           user={user} 
@@ -189,31 +195,36 @@ const Index = () => {
       
       <div className="p-4">
         {!selectedSport && (
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12 pt-8">
-              <h1 className="text-5xl font-bold text-gray-900 mb-4">
-                Fantasy Sports Predictor
-              </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-                Join tournaments, predict match outcomes, and win exciting prizes!
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16 pt-12">
+              <div className="flex items-center justify-center mb-6">
+                <Sparkles className="h-12 w-12 text-purple-600 mr-4" />
+                <h1 className="text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Fantasy Sports Arena
+                </h1>
+                <Sparkles className="h-12 w-12 text-purple-600 ml-4" />
+              </div>
+              <p className="text-2xl text-gray-700 max-w-3xl mx-auto mb-12 leading-relaxed">
+                Experience the thrill of sports prediction with our premium fantasy platform. 
+                Join exclusive tournaments, make strategic predictions, and win amazing prizes!
               </p>
               
               {!user && (
-                <div className="flex justify-center space-x-4 mb-8">
+                <div className="flex justify-center space-x-6 mb-12">
                   <Button 
                     onClick={() => { setAuthMode('login'); setShowAuth(true); }}
-                    className="flex items-center space-x-2"
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold shadow-lg transition-all duration-300 hover:scale-105"
                   >
-                    <LogIn className="h-4 w-4" />
-                    <span>Login</span>
+                    <LogIn className="h-5 w-5 mr-2" />
+                    Login
                   </Button>
                   <Button 
                     variant="outline"
                     onClick={() => { setAuthMode('signup'); setShowAuth(true); }}
-                    className="flex items-center space-x-2"
+                    className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 px-8 py-4 text-lg font-semibold shadow-lg transition-all duration-300 hover:scale-105"
                   >
-                    <UserPlus className="h-4 w-4" />
-                    <span>Sign Up</span>
+                    <UserPlus className="h-5 w-5 mr-2" />
+                    Sign Up
                   </Button>
                 </div>
               )}

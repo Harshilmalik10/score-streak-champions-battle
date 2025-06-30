@@ -3,7 +3,7 @@ interface Match {
   id: number;
   team1: string;
   team2: string;
-  sport: 'basketball' | 'football';
+  sport: 'basketball' | 'football' | 'tennis';
   actualResult?: 'team1' | 'draw' | 'team2';
 }
 
@@ -31,4 +31,17 @@ export const footballMatches: Match[] = [
   { id: 8, team1: 'Saints', team2: 'Falcons', sport: 'football', actualResult: 'team2' },
   { id: 9, team1: 'Vikings', team2: 'Lions', sport: 'football', actualResult: 'draw' },
   { id: 10, team1: 'Titans', team2: 'Colts', sport: 'football', actualResult: 'team1' }
+];
+
+export const tennisMatches: Match[] = [
+  { id: 1, team1: 'Djokovic', team2: 'Nadal', sport: 'tennis', actualResult: 'team1' },
+  { id: 2, team1: 'Federer', team2: 'Murray', sport: 'tennis', actualResult: 'team2' },
+  { id: 3, team1: 'Alcaraz', team2: 'Medvedev', sport: 'tennis', actualResult: 'team1' },
+  { id: 4, team1: 'Tsitsipas', team2: 'Zverev', sport: 'tennis', actualResult: 'team1' },
+  { id: 5, team1: 'Rublev', team2: 'Berrettini', sport: 'tennis', actualResult: 'team2' },
+  { id: 6, team1: 'Ruud', team2: 'Fritz', sport: 'tennis', actualResult: 'team1' },
+  { id: 7, team1: 'Hurkacz', team2: 'Norrie', sport: 'tennis', actualResult: 'team1' },
+  { id: 8, team1: 'Auger-Aliassime', team2: 'Sinner', sport: 'tennis', actualResult: 'team2' },
+  { id: 9, team1: 'Shapovalov', team2: 'Kyrgios', sport: 'tennis', actualResult: 'team1' },
+  { id: 10, team1: 'De Minaur', team2: 'Paul', sport: 'tennis', actualResult: 'team2' }
 ];

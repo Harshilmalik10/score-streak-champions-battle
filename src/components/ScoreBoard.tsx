@@ -6,7 +6,7 @@ interface ScoreBoardProps {
   totalScore: number;
   correctPredictions: number;
   totalPredictions: number;
-  sport: 'basketball' | 'football' | null;
+  sport: 'basketball' | 'football' | 'tennis' | null;
 }
 
 const ScoreBoard = ({ totalScore, correctPredictions, totalPredictions, sport }: ScoreBoardProps) => {
@@ -15,11 +15,12 @@ const ScoreBoard = ({ totalScore, correctPredictions, totalPredictions, sport }:
   const getSportColor = () => {
     if (sport === 'basketball') return 'from-orange-500 to-red-600';
     if (sport === 'football') return 'from-green-600 to-blue-700';
+    if (sport === 'tennis') return 'from-yellow-500 to-orange-600';
     return 'from-gray-500 to-gray-700';
   };
 
   return (
-    <Card className={`p-6 bg-gradient-to-r ${getSportColor()} text-white`}>
+    <Card className={`p-6 bg-gradient-to-r ${getSportColor()} text-white shadow-xl`}>
       <div className="grid grid-cols-3 gap-6">
         <div className="text-center">
           <div className="flex justify-center mb-2">
