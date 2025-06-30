@@ -8,7 +8,7 @@ interface Match {
   id: number;
   team1: string;
   team2: string;
-  sport: 'basketball' | 'football';
+  sport: 'basketball' | 'football' | 'tennis';
   actualResult?: 'team1' | 'draw' | 'team2';
 }
 
