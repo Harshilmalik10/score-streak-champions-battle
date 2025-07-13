@@ -146,7 +146,7 @@ const MatchCard = ({
               }`}
             >
               <Crown className="h-3 w-3" />
-              <span>Captain (9pts)</span>
+              <span>Captain (6pts)</span>
             </Button>
             
             <Button
@@ -158,7 +158,7 @@ const MatchCard = ({
               }`}
             >
               <Star className="h-3 w-3" />
-              <span>V.Captain (6pts)</span>
+              <span>V.Captain (4.5pts)</span>
             </Button>
           </div>
         )}

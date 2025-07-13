@@ -132,9 +132,9 @@ const Index = () => {
           correct++;
           let points = 3;
           if (captain === match.id) {
-            points = 9; // Captain gets 3x points
+            points = 6; // Captain gets double points
           } else if (viceCaptain === match.id) {
-            points = 6; // Vice-captain gets 2x points
+            points = 4.5; // Vice-captain gets 1.5x points
           }
           score += points;
         }
@@ -325,7 +325,7 @@ const Index = () => {
               <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <h3 className="font-semibold text-yellow-800 mb-2">Captain & Vice-Captain Selection</h3>
                 <p className="text-sm text-yellow-700">
-                  Select one Captain (9 points if correct) and one Vice-Captain (6 points if correct) from your predictions.
+                  Select one Captain (6 points if correct) and one Vice-Captain (4.5 points if correct) from your predictions.
                   {captain && ` Captain: Match ${captain}`}
                   {viceCaptain && ` | Vice-Captain: Match ${viceCaptain}`}
                 </p>
