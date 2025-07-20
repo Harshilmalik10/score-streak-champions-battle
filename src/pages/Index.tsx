@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import AuthForm from '@/components/AuthForm';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { User, Session } from '@supabase/supabase-js';
 import UserHeader from '@/components/UserHeader';
 import SportSelector from '@/components/SportSelector';
 import TournamentSelector from '@/components/TournamentSelector';
@@ -10,12 +12,6 @@ import WalletManager from '@/components/WalletManager';
 import { Button } from '@/components/ui/button';
 import { basketballMatches, footballMatches, tennisMatches } from '@/data/mockMatches';
 import { ArrowLeft, RefreshCw, LogIn, UserPlus, Sparkles } from 'lucide-react';
-
-interface User {
-  id: string;
-  email: string;
-  balance: number;
-}
 
 interface Tournament {
   id: string;
@@ -28,8 +24,8 @@ interface Tournament {
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [showAuth, setShowAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [session, setSession] = useState<Session | null>(null);
+  const navigate = useNavigate();
   const [showWallet, setShowWallet] = useState(false);
   const [selectedSport, setSelectedSport] = useState<'basketball' | 'football' | 'tennis' | null>(null);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
@@ -37,6 +33,25 @@ const Index = () => {
   const [predictions, setPredictions] = useState<Record<number, 'team1' | 'draw' | 'team2'>>({});
   const [captain, setCaptain] = useState<number | null>(null);
   const [viceCaptain, setViceCaptain] = useState<number | null>(null);
+
+  // Set up authentication listener
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const getCurrentMatches = () => {
     if (selectedSport === 'basketball') return basketballMatches;
@@ -47,13 +62,10 @@ const Index = () => {
 
   const currentMatches = getCurrentMatches();
 
-  const handleAuth = (userData: User) => {
-    setUser(userData);
-    setShowAuth(false);
-  };
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setSession(null);
     setSelectedSport(null);
     setSelectedTournament(null);
     setGameMode('select');
@@ -65,7 +77,7 @@ const Index = () => {
 
   const handleSportSelect = (sport: 'basketball' | 'football' | 'tennis') => {
     if (!user) {
-      setShowAuth(true);
+      navigate('/auth');
       return;
     }
     setSelectedSport(sport);
@@ -79,12 +91,7 @@ const Index = () => {
   const handleTournamentSelect = (tournament: Tournament) => {
     setSelectedTournament(tournament);
     setGameMode('select');
-    if (user) {
-      setUser({
-        ...user,
-        balance: user.balance - tournament.entryFee
-      });
-    }
+    // Note: In real app, deduct entry fee from user's wallet in database
   };
 
   const handleModeSelect = (mode: 'predict' | 'results') => {
@@ -156,27 +163,19 @@ const Index = () => {
   };
 
   const handleWalletUpdate = (newBalance: number) => {
-    if (user) {
-      setUser({ ...user, balance: newBalance });
-    }
+    // Note: In real app, update wallet balance in database
+    console.log('Wallet update:', newBalance);
   };
-
-  // Show auth form if requested
-  if (showAuth) {
-    return (
-      <AuthForm 
-        onAuth={handleAuth} 
-        initialMode={authMode}
-        onBack={() => setShowAuth(false)}
-      />
-    );
-  }
 
   // Show wallet manager if requested
   if (showWallet && user) {
     return (
       <WalletManager 
-        user={user}
+        user={{
+          id: user.id,
+          email: user.email || '',
+          balance: 5000 // Mock balance - would come from database
+        }}
         onWalletUpdate={handleWalletUpdate}
         onBack={() => setShowWallet(false)}
       />
@@ -187,7 +186,11 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100">
       {user && (
         <UserHeader 
-          user={user} 
+          user={{
+            id: user.id,
+            email: user.email || '',
+            balance: 5000 // Mock balance - would come from database
+          }} 
           onLogout={handleLogout}
           onWalletClick={() => setShowWallet(true)}
         />
@@ -212,7 +215,7 @@ const Index = () => {
               {!user && (
                 <div className="flex justify-center space-x-6 mb-12">
                   <Button 
-                    onClick={() => { setAuthMode('login'); setShowAuth(true); }}
+                    onClick={() => navigate('/auth')}
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold shadow-lg transition-all duration-300 hover:scale-105"
                   >
                     <LogIn className="h-5 w-5 mr-2" />
@@ -220,7 +223,7 @@ const Index = () => {
                   </Button>
                   <Button 
                     variant="outline"
-                    onClick={() => { setAuthMode('signup'); setShowAuth(true); }}
+                    onClick={() => navigate('/auth')}
                     className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 px-8 py-4 text-lg font-semibold shadow-lg transition-all duration-300 hover:scale-105"
                   >
                     <UserPlus className="h-5 w-5 mr-2" />
@@ -254,7 +257,7 @@ const Index = () => {
             
             <TournamentSelector 
               sport={selectedSport}
-              userBalance={user?.balance || 0}
+              userBalance={5000} // Mock balance - would come from database
               onTournamentSelect={handleTournamentSelect}
             />
           </div>
