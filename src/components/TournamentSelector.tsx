@@ -2,7 +2,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Calendar, Award, Star } from 'lucide-react';
+import { Trophy, Users, Calendar, Award, Star, Plus } from 'lucide-react';
 
 interface Tournament {
   id: string;
@@ -17,9 +17,11 @@ interface TournamentSelectorProps {
   sport: 'basketball' | 'football' | 'tennis';
   userBalance: number;
   onTournamentSelect: (tournament: Tournament) => void;
+  onCreateTournament?: () => void;
+  userId?: string;
 }
 
-const TournamentSelector = ({ sport, userBalance, onTournamentSelect }: TournamentSelectorProps) => {
+const TournamentSelector = ({ sport, userBalance, onTournamentSelect, onCreateTournament, userId }: TournamentSelectorProps) => {
   const tournaments: Tournament[] = [
     {
       id: `${sport}-basic`,
@@ -108,6 +110,32 @@ const TournamentSelector = ({ sport, userBalance, onTournamentSelect }: Tourname
           </div>
         </div>
       </div>
+
+      {/* Host Tournament Option */}
+      {onCreateTournament && userId && (
+        <div className="text-center mb-8">
+          <Card className="max-w-md mx-auto p-6 bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-dashed border-purple-300 hover:border-purple-400 transition-all duration-300">
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <Plus className="h-12 w-12 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-purple-800 mb-2">Host Your Own Tournament</h3>
+                <p className="text-purple-600 text-sm">
+                  Create a custom tournament by selecting your own 10 matches
+                </p>
+              </div>
+              <Button
+                onClick={onCreateTournament}
+                className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold py-3 shadow-lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Tournament
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {tournaments.map((tournament, index) => {

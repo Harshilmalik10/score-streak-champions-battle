@@ -5,6 +5,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import UserHeader from '@/components/UserHeader';
 import SportSelector from '@/components/SportSelector';
 import TournamentSelector from '@/components/TournamentSelector';
+import TournamentCreator from '@/components/TournamentCreator';
 import GameModeSelector from '@/components/GameModeSelector';
 import MatchCard from '@/components/MatchCard';
 import ScoreBoard from '@/components/ScoreBoard';
@@ -29,7 +30,7 @@ const Index = () => {
   const [showWallet, setShowWallet] = useState(false);
   const [selectedSport, setSelectedSport] = useState<'basketball' | 'football' | 'tennis' | null>(null);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
-  const [gameMode, setGameMode] = useState<'select' | 'tournament' | 'predict' | 'results'>('select');
+  const [gameMode, setGameMode] = useState<'select' | 'tournament' | 'predict' | 'results' | 'create-tournament'>('select');
   const [predictions, setPredictions] = useState<Record<number, 'team1' | 'draw' | 'team2'>>({});
   const [captain, setCaptain] = useState<number | null>(null);
   const [viceCaptain, setViceCaptain] = useState<number | null>(null);
@@ -92,6 +93,15 @@ const Index = () => {
     setSelectedTournament(tournament);
     setGameMode('select');
     // Note: In real app, deduct entry fee from user's wallet in database
+  };
+
+  const handleCreateTournament = () => {
+    setGameMode('create-tournament');
+  };
+
+  const handleTournamentCreated = () => {
+    setGameMode('tournament');
+    // Optionally refresh tournaments here
   };
 
   const handleModeSelect = (mode: 'predict' | 'results') => {
@@ -259,8 +269,20 @@ const Index = () => {
               sport={selectedSport}
               userBalance={5000} // Mock balance - would come from database
               onTournamentSelect={handleTournamentSelect}
+              onCreateTournament={handleCreateTournament}
+              userId={user?.id}
             />
           </div>
+        )}
+
+        {selectedSport && gameMode === 'create-tournament' && user && (
+          <TournamentCreator
+            sport={selectedSport}
+            availableMatches={getCurrentMatches()}
+            onBack={() => setGameMode('tournament')}
+            onTournamentCreated={handleTournamentCreated}
+            userId={user.id}
+          />
         )}
 
         {selectedSport && selectedTournament && gameMode === 'select' && (

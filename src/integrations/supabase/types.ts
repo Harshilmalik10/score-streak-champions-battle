@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      tournament_participants: {
+        Row: {
+          captain_match_id: number | null
+          id: string
+          joined_at: string
+          predictions: Json | null
+          score: number | null
+          tournament_id: string
+          user_id: string
+          vice_captain_match_id: number | null
+        }
+        Insert: {
+          captain_match_id?: number | null
+          id?: string
+          joined_at?: string
+          predictions?: Json | null
+          score?: number | null
+          tournament_id: string
+          user_id: string
+          vice_captain_match_id?: number | null
+        }
+        Update: {
+          captain_match_id?: number | null
+          id?: string
+          joined_at?: string
+          predictions?: Json | null
+          score?: number | null
+          tournament_id?: string
+          user_id?: string
+          vice_captain_match_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          created_at: string
+          current_participants: number
+          entry_fee: number
+          host_id: string
+          id: string
+          max_participants: number
+          name: string
+          prize_pool: number
+          selected_matches: Json
+          sport: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_participants?: number
+          entry_fee: number
+          host_id: string
+          id?: string
+          max_participants?: number
+          name: string
+          prize_pool?: number
+          selected_matches: Json
+          sport: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_participants?: number
+          entry_fee?: number
+          host_id?: string
+          id?: string
+          max_participants?: number
+          name?: string
+          prize_pool?: number
+          selected_matches?: Json
+          sport?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
